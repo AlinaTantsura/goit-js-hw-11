@@ -24,10 +24,12 @@ function handleSubmit(event){
        {if(!resp.ok){
         throw new Error()}
     return resp.json()} ).then(arr => {
+      console.log(arr);
         if(!arr.hits.length){
             Notify.warning('Sorry, there are no images matching your search query. Please try again.');
-            // console.log('Sorry, there are no images matching your search query. Please try again.');
+            return;// console.log('Sorry, there are no images matching your search query. Please try again.');
         }
+        Notify.success(`Hooray! We found ${arr.totalHits} images.`);
        const markup = arr.hits.map(item => `<div class="photo-card">
         <img src="${item.webformatURL}" alt="${item.tags}" loading="lazy" />
         <div class="info">
