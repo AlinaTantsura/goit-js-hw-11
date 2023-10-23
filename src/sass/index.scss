@@ -1,7 +1,12 @@
 @import './common';
 
+img{
+    margin: 0;
+    padding: 0;
+}
 .main-box{
     padding: 20px;
+    background-color: bisque;
 }
 .search-form{
     margin: 0 auto;
@@ -9,11 +14,12 @@
 }
 .gallery{
     display: grid;
-    grid-template-columns: repeat(4, 250px);
-    grid-gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-row-gap: 10px;
 }
 .photo-card{
     width: 250px;
+    background-color: whitesmoke;
 }
 
 .photo-card > img{
@@ -24,13 +30,15 @@
 
 .info{
     display: grid;
-    grid-template-columns: repeat(4, 60px);
+    grid-template-columns: repeat(4, 55px);
     grid-gap: 5px;
-    // grid-gap: 10px;
-
-    
 }
 .info-item{
     font-size: 10px;
     display: grid;
+    text-align: center;
+    grid-gap: 7px;
+}
+.hidden{
+    display: none;
 }
