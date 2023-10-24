@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import SimpleLightbox from "simplelightbox";
+import "simplelightbox/dist/simple-lightbox.min.css";
 
 const searchForm = document.querySelector('.search-form');
 const gallery = document.querySelector('.gallery');
@@ -19,7 +20,7 @@ axios.defaults.baseURL = 'https://pixabay.com/api/';
 input.addEventListener('input', handleInput);
 searchForm.addEventListener('submit', handleSubmit);
 loadMoreBtn.addEventListener('click', handleClick);
-
+const galleryBox = new SimpleLightbox('.gallery a');
 function handleInput(event){
   searchValue = event.currentTarget.value;
 }
@@ -40,6 +41,7 @@ async function handleSubmit(event) {
       Notify.success(`Hooray! We found ${resp.data.totalHits} images.`);
     gallery.innerHTML = '';
     renderPictureCard(resp.data.hits);
+    console.log(resp.data.hits);
     count = 0;
     count += resp.data.hits.length;
     if (count < resp.data.totalHits) {
@@ -57,28 +59,49 @@ async function fetchPictures(){
   }
 function renderPictureCard(arr) {
   const markup = arr.map(item => `<div class="photo-card">
-         <img src="${item.webformatURL}" alt="${item.tags}" loading="lazy" />
-         <div class="info">
-           <p class="info-item">
-             <b>Likes</b>
-             ${item.likes}
-           </p>
-           <p class="info-item">
-             <b>Views</b>
-             ${item.views}
-           </p>
-           <p class="info-item">
-             <b>Comments</b>
-             ${item.comments}
-           </p>
-           <p class="info-item">
-             <b>Downloads</b>
-             ${item.downloads}
-           </p>
-       </div>
-       </div>`).join('')
+  <a class="img-link" href="${item.largeImageURL}"><img src="${item.webformatURL}" alt="${item.tags}" loading="lazy" /></a>
+     <div class="info">
+       <p class="info-item">
+         <b>Likes</b>
+         ${item.likes}
+       </p>
+       <p class="info-item">
+         <b>Views</b>
+         ${item.views}
+       </p>
+       <p class="info-item">
+         <b>Comments</b>
+         ${item.comments}
+       </p>
+       <p class="info-item">
+         <b>Downloads</b>
+         ${item.downloads}
+       </p>
+   </div>
+   </div>`).join('')
+  // const markup = arr.map(item => `<div class="photo-card">
+  //     <img src="${item.webformatURL}" alt="${item.tags}" loading="lazy" />
+  //        <div class="info">
+  //          <p class="info-item">
+  //            <b>Likes</b>
+  //            ${item.likes}
+  //          </p>
+  //          <p class="info-item">
+  //            <b>Views</b>
+  //            ${item.views}
+  //          </p>
+  //          <p class="info-item">
+  //            <b>Comments</b>
+  //            ${item.comments}
+  //          </p>
+  //          <p class="info-item">
+  //            <b>Downloads</b>
+  //            ${item.downloads}
+  //          </p>
+  //      </div>
+  //      </div>`).join('')
   gallery.insertAdjacentHTML('beforeend', markup); 
-  // gallery.innerHTML = markup;
+  galleryBox.refresh();
 }
 
 async function handleClick() {
