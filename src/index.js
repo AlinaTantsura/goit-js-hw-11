@@ -1,11 +1,13 @@
 import axios from 'axios';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import SimpleLightbox from "simplelightbox";
 
 const searchForm = document.querySelector('.search-form');
 const gallery = document.querySelector('.gallery');
 const input = searchForm.elements.searchQuery;
 let searchValue;
-let page = 1;
+let page;
+let count;
 const loadMoreBtn = document.querySelector('.load-more');
 
 const API_KEY = '40200855-3a192acac81e17bb872cbbb4e';
@@ -16,24 +18,33 @@ axios.defaults.baseURL = 'https://pixabay.com/api/';
 // axios.defaults.headers.common['safesearch'] = 'true';
 input.addEventListener('input', handleInput);
 searchForm.addEventListener('submit', handleSubmit);
-
+loadMoreBtn.addEventListener('click', handleClick);
 
 function handleInput(event){
-    searchValue = event.currentTarget.value;
+  searchValue = event.currentTarget.value;
 }
 
 async function handleSubmit(event) {
   event.preventDefault();
+  if (!searchValue) {
+    Notify.warning("Search mustn't be empty");
+    return;
+  }
   try {
+    page = 1;
     const resp = await fetchPictures();
     if(!resp.data.hits.length){
       Notify.warning('Sorry, there are no images matching your search query. Please try again.');
           return;// console.log('Sorry, there are no images matching your search query. Please try again.');
       }
       Notify.success(`Hooray! We found ${resp.data.totalHits} images.`);
-    console.log(resp.data.hits);
+    gallery.innerHTML = '';
     renderPictureCard(resp.data.hits);
-    loadMoreBtn.classList.remove('hidden');
+    count = 0;
+    count += resp.data.hits.length;
+    if (count < resp.data.totalHits) {
+      loadMoreBtn.classList.remove('hidden');
+    }
   }
   catch{
     Notify.failure('Oops! Something went wrong! Try reloading the page!');
@@ -66,7 +77,34 @@ function renderPictureCard(arr) {
            </p>
        </div>
        </div>`).join('')
-      gallery.innerHTML = markup;
+  gallery.insertAdjacentHTML('beforeend', markup); 
+  // gallery.innerHTML = markup;
+}
+
+async function handleClick() {
+  page += 1;
+  try {
+    const resp = await fetchPictures();
+    renderPictureCard(resp.data.hits);
+    const { height: cardHeight } = document
+  .querySelector(".gallery")
+  .firstElementChild.getBoundingClientRect();
+
+window.scrollBy({
+  top: cardHeight * 3,
+  behavior: "smooth",
+});
+    count += resp.data.hits.length;
+    console.log(count);
+    console.log(resp.data.totalHits);
+    if (count >= resp.data.totalHits) {
+      loadMoreBtn.classList.add('hidden');
+    }
+  }
+  catch {
+    Notify.failure('Oops! Something went wrong! Try reloading the page!');
+  }
+  
 }
 // const API_KEY = '40200855-3a192acac81e17bb872cbbb4e';
 // const BASE_URL = 'https://pixabay.com/api/';
