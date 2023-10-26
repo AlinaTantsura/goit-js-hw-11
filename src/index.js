@@ -10,16 +10,20 @@ let searchValue;
 let page;
 let count;
 const loadMoreBtn = document.querySelector('.load-more');
+const guard = document.querySelector('.js-guard');
+const options = {
+  root: null,
+  rootMargin: "300px",
+};
+const observer = new IntersectionObserver(handlerObzerve, options);
 
 const API_KEY = '40200855-3a192acac81e17bb872cbbb4e';
-// const BASE_URL = 'https://pixabay.com/api/';
 axios.defaults.baseURL = 'https://pixabay.com/api/';
 // axios.defaults.headers.common['key'] = '40200855-3a192acac81e17bb872cbbb4e';
 // axios.defaults.headers.common['image_type'] = 'horizontal';
 // axios.defaults.headers.common['safesearch'] = 'true';
 input.addEventListener('input', handleInput);
 searchForm.addEventListener('submit', handleSubmit);
-loadMoreBtn.addEventListener('click', handleClick);
 const galleryBox = new SimpleLightbox('.gallery a');
 function handleInput(event){
   searchValue = event.currentTarget.value;
@@ -34,6 +38,7 @@ async function handleSubmit(event) {
   try {
     page = 1;
     const resp = await fetchPictures();
+    console.log(page);
     if(!resp.data.hits.length){
       Notify.warning('Sorry, there are no images matching your search query. Please try again.');
           return;// console.log('Sorry, there are no images matching your search query. Please try again.');
@@ -45,7 +50,7 @@ async function handleSubmit(event) {
     count = 0;
     count += resp.data.hits.length;
     if (count < resp.data.totalHits) {
-      loadMoreBtn.classList.remove('hidden');
+      observer.observe(guard);
     }
   }
   catch{
@@ -79,27 +84,6 @@ function renderPictureCard(arr) {
        </p>
    </div>
    </div>`).join('')
-  // const markup = arr.map(item => `<div class="photo-card">
-  //     <img src="${item.webformatURL}" alt="${item.tags}" loading="lazy" />
-  //        <div class="info">
-  //          <p class="info-item">
-  //            <b>Likes</b>
-  //            ${item.likes}
-  //          </p>
-  //          <p class="info-item">
-  //            <b>Views</b>
-  //            ${item.views}
-  //          </p>
-  //          <p class="info-item">
-  //            <b>Comments</b>
-  //            ${item.comments}
-  //          </p>
-  //          <p class="info-item">
-  //            <b>Downloads</b>
-  //            ${item.downloads}
-  //          </p>
-  //      </div>
-  //      </div>`).join('')
   gallery.insertAdjacentHTML('beforeend', markup); 
   galleryBox.refresh();
 }
@@ -108,13 +92,14 @@ async function handleClick() {
   page += 1;
   try {
     const resp = await fetchPictures();
+    console.log(page);
     renderPictureCard(resp.data.hits);
     const { height: cardHeight } = document
   .querySelector(".gallery")
   .firstElementChild.getBoundingClientRect();
 
 window.scrollBy({
-  top: cardHeight * 3,
+  top: cardHeight * 2,
   behavior: "smooth",
 });
     count += resp.data.hits.length;
@@ -129,6 +114,62 @@ window.scrollBy({
   }
   
 }
+
+function handlerObzerve(entries, obzerver){
+  entries.forEach(async (entry) => {
+    if(entry.isIntersecting){
+      page +=1
+    try {
+      const resp = await fetchPictures();
+      renderPictureCard(resp.data.hits);
+      const { height: cardHeight } = document
+        .querySelector(".gallery")
+        .firstElementChild.getBoundingClientRect();
+      
+      window.scrollBy({
+        top: cardHeight * 1,
+        behavior: "smooth",
+      });
+      count += resp.data.hits.length;
+    console.log(count);
+    console.log(resp.data.totalHits);
+    if (count >= resp.data.totalHits) {
+      observer.unobserve(guard);
+      return;
+    }
+    }
+    catch{
+      Notify.failure('Oops! Something went wrong! Try reloading the page!');
+    }
+    }
+  })
+}
+
+// async function handleClick() {
+//   page += 1;
+//   try {
+//     const resp = await fetchPictures();
+//     renderPictureCard(resp.data.hits);
+//     const { height: cardHeight } = document
+//   .querySelector(".gallery")
+//   .firstElementChild.getBoundingClientRect();
+
+// window.scrollBy({
+//   top: cardHeight * 2,
+//   behavior: "smooth",
+// });
+//     count += resp.data.hits.length;
+//     console.log(count);
+//     console.log(resp.data.totalHits);
+//     if (count >= resp.data.totalHits) {
+//       loadMoreBtn.classList.add('hidden');
+//     }
+//   }
+//   catch {
+//     Notify.failure('Oops! Something went wrong! Try reloading the page!');
+//   }
+  
+// }
 // const API_KEY = '40200855-3a192acac81e17bb872cbbb4e';
 // const BASE_URL = 'https://pixabay.com/api/';
 
