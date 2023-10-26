@@ -9,24 +9,32 @@ const input = searchForm.elements.searchQuery;
 let searchValue;
 let page;
 let count;
-const loadMoreBtn = document.querySelector('.load-more');
+
+const loader = document.querySelector('.loader');
 const guard = document.querySelector('.js-guard');
 const options = {
   root: null,
   rootMargin: "300px",
 };
+const optionsAxios = {
+  baseURL: 'https://pixabay.com/api/',
+  params: {
+    key: '40200855-3a192acac81e17bb872cbbb4e',
+    image_type: 'horizontal',
+    safesearch: 'true',
+    per_page: 40,
+  },
+};
 const observer = new IntersectionObserver(handlerObzerve, options);
 
 const API_KEY = '40200855-3a192acac81e17bb872cbbb4e';
 axios.defaults.baseURL = 'https://pixabay.com/api/';
-// axios.defaults.headers.common['key'] = '40200855-3a192acac81e17bb872cbbb4e';
-// axios.defaults.headers.common['image_type'] = 'horizontal';
-// axios.defaults.headers.common['safesearch'] = 'true';
 input.addEventListener('input', handleInput);
 searchForm.addEventListener('submit', handleSubmit);
 const galleryBox = new SimpleLightbox('.gallery a');
 function handleInput(event){
   searchValue = event.currentTarget.value;
+  observer.unobserve(guard);
 }
 
 async function handleSubmit(event) {
@@ -36,17 +44,16 @@ async function handleSubmit(event) {
     return;
   }
   try {
+    gallery.innerHTML = '';
     page = 1;
+    loader.classList.remove('hidden');
     const resp = await fetchPictures();
-    console.log(page);
+    loader.classList.add('hidden');
     if(!resp.data.hits.length){
       Notify.warning('Sorry, there are no images matching your search query. Please try again.');
-          return;// console.log('Sorry, there are no images matching your search query. Please try again.');
-      }
+      return;}
       Notify.success(`Hooray! We found ${resp.data.totalHits} images.`);
-    gallery.innerHTML = '';
     renderPictureCard(resp.data.hits);
-    console.log(resp.data.hits);
     count = 0;
     count += resp.data.hits.length;
     if (count < resp.data.totalHits) {
@@ -55,12 +62,13 @@ async function handleSubmit(event) {
   }
   catch{
     Notify.failure('Oops! Something went wrong! Try reloading the page!');
+    loader.classList.add('hidden');
   }
 }
 
 async function fetchPictures(){
-    return await axios.get(`?key=${API_KEY}&q=${searchValue}&image_type=horizontal&safesearch=true&per_page=40&page=${page}`);
- 
+    // return await axios.get(`?key=${API_KEY}&q=${searchValue}&image_type=horizontal&safesearch=true&per_page=40&page=${page}`);
+    return await axios.get(`?q=${searchValue}&page=${page}`, optionsAxios);
   }
 function renderPictureCard(arr) {
   const markup = arr.map(item => `<div class="photo-card">
@@ -88,34 +96,7 @@ function renderPictureCard(arr) {
   galleryBox.refresh();
 }
 
-async function handleClick() {
-  page += 1;
-  try {
-    const resp = await fetchPictures();
-    console.log(page);
-    renderPictureCard(resp.data.hits);
-    const { height: cardHeight } = document
-  .querySelector(".gallery")
-  .firstElementChild.getBoundingClientRect();
-
-window.scrollBy({
-  top: cardHeight * 2,
-  behavior: "smooth",
-});
-    count += resp.data.hits.length;
-    console.log(count);
-    console.log(resp.data.totalHits);
-    if (count >= resp.data.totalHits) {
-      loadMoreBtn.classList.add('hidden');
-    }
-  }
-  catch {
-    Notify.failure('Oops! Something went wrong! Try reloading the page!');
-  }
-  
-}
-
-function handlerObzerve(entries, obzerver){
+function handlerObzerve(entries){
   entries.forEach(async (entry) => {
     if(entry.isIntersecting){
       page +=1
@@ -127,7 +108,7 @@ function handlerObzerve(entries, obzerver){
         .firstElementChild.getBoundingClientRect();
       
       window.scrollBy({
-        top: cardHeight * 1,
+        top: cardHeight * 2,
         behavior: "smooth",
       });
       count += resp.data.hits.length;
@@ -144,6 +125,7 @@ function handlerObzerve(entries, obzerver){
     }
   })
 }
+
 
 // async function handleClick() {
 //   page += 1;
