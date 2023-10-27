@@ -57,7 +57,7 @@ async function handleSubmit(event) {
     }
     else{
       observer.unobserve(guard);
-      Notify.info("We're sorry, but you've reached the end of search results.");
+      observerAdd.observe(gallery.lastElementChild);
     }
   }
   catch{
