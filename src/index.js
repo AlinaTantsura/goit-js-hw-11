@@ -24,6 +24,7 @@ const optionsAxios = {
   },
 };
 const observer = new IntersectionObserver(handlerObzerve, options);
+const observerAdd = new IntersectionObserver(handlerObzerveLast, options);
 
 input.addEventListener('input', handleInput);
 searchForm.addEventListener('submit', handleSubmit);
@@ -53,6 +54,10 @@ async function handleSubmit(event) {
     renderPictureCard(resp.data.hits);
     if (gallery.children.length < resp.data.totalHits) {
       observer.observe(guard);
+    }
+    else{
+      observer.unobserve(guard);
+      Notify.info("We're sorry, but you've reached the end of search results.");
     }
   }
   catch{
@@ -106,14 +111,23 @@ function handlerObzerve(entries){
         top: cardHeight * 2,
         behavior: "smooth",
       });
-    if (gallery.children.length >= resp.data.totalHits) {
-      observer.unobserve(guard);
-      return;
-    }
-    }
+      if (gallery.children.length >= resp.data.totalHits) {
+        observer.unobserve(guard);
+        observerAdd.observe(gallery.lastElementChild);
+        return;
+      }}
     catch{
       Notify.failure('Oops! Something went wrong! Try reloading the page!');
     }
     }
   })
+}
+
+function handlerObzerveLast(entries){
+  entries.forEach((entry) => {
+    if(entry.isIntersecting){
+     Notify.info("We're sorry, but you've reached the end of search results.");
+     observerAdd.unobserve(gallery.lastElementChild);
+    }
+})
 }
