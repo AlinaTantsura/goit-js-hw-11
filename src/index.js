@@ -51,9 +51,6 @@ async function handleSubmit(event) {
       return;}
       Notify.success(`Hooray! We found ${resp.data.totalHits} images.`);
     renderPictureCard(resp.data.hits);
-    // count = 0;
-    // count += resp.data.hits.length;
-    console.log(gallery.children.length)
     if (gallery.children.length < resp.data.totalHits) {
       observer.observe(guard);
     }
